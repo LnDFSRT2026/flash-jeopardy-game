@@ -1,0 +1,312 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head><meta name="ms-sp-authoring-source" content="agent"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FLASH Jeopardy | Cotality L&amp;D</title>
+<style>
+:root{--navy:#0b1f3a;--blue:#0057b8;--teal:#00a3ad;--gold:#ffc72c;--white:#fff;--red:#e04848;--green:#2fa84f}*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;background:var(--navy);color:var(--white);min-height:100vh}header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#081830;border-bottom:4px solid var(--teal)}header h1{font-size:26px;letter-spacing:2px}header h1 span{color:var(--gold)}.meta{font-size:13px;opacity:.85;text-align:right}nav{display:flex;gap:8px;padding:12px 24px;flex-wrap:wrap}nav button,.btn{background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px}nav button.active{background:var(--gold);color:var(--navy)}.btn.alt{background:var(--teal)}.btn.red{background:var(--red)}.btn.green{background:var(--green)}main{padding:0 24px 24px}.board{display:grid;gap:8px;margin-top:8px}.cat{background:var(--blue);padding:14px 6px;text-align:center;font-weight:700;text-transform:uppercase;font-size:15px;border-radius:6px;min-height:64px;display:flex;align-items:center;justify-content:center}.tile{background:#123a73;color:var(--gold);font-size:30px;font-weight:800;text-align:center;padding:22px 0;border-radius:6px;cursor:pointer;transition:transform .1s}.tile:hover{transform:scale(1.03);background:#1a4a8f}.tile.done{background:#0a1a33;color:#33445f;cursor:default;transform:none}.scores{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}.team{background:#081830;border:2px solid var(--teal);border-radius:8px;padding:10px 14px;min-width:150px;text-align:center}.team input{background:transparent;border:none;color:#fff;font-weight:700;text-align:center;width:100%;font-size:15px}.team .pts{font-size:26px;font-weight:800;color:var(--gold)}.team .adj button{background:#1a4a8f;border:none;color:#fff;padding:3px 8px;margin:2px;border-radius:4px;cursor:pointer}.modal{position:fixed;inset:0;background:rgba(5,15,30,.96);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;z-index:10}.modal.show{display:flex}.modal .label{color:var(--teal);font-weight:700;letter-spacing:2px;margin-bottom:12px}.modal .clue{font-size:clamp(22px,3.4vw,40px);max-width:1000px;line-height:1.35;margin-bottom:24px}.modal .answer{font-size:clamp(20px,2.8vw,32px);color:var(--gold);font-weight:700;margin-bottom:20px;display:none}.dd{font-size:clamp(36px,6vw,72px);color:var(--gold);font-weight:900;margin-bottom:18px;display:none}.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0}.timer{font-size:48px;font-weight:900;color:var(--gold);margin-bottom:16px}.final{max-width:900px;margin:30px auto;text-align:center}.final h2{color:var(--gold);font-size:34px;margin-bottom:8px}.wagers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0}.wagers div{background:#081830;border:2px solid var(--teal);padding:10px;border-radius:8px}.wagers input{width:110px;padding:6px;font-size:16px;text-align:center}.guide{max-width:900px;margin:20px auto;line-height:1.6;background:#081830;padding:24px;border-radius:8px}.guide h2{color:var(--gold);margin-bottom:10px}footer{text-align:center;font-size:12px;opacity:.6;padding:12px}.hidden{display:none}
+</style></head><body>
+<header><h1>FLASH <span>JEOPARDY</span></h1><div class="meta"><div id="gTitle"></div><div id="gHosts"></div></div></header>
+<nav><button data-view="r1" class="active">Round 1</button><button data-view="r2">Double Jeopardy</button><button data-view="final">Final Jeopardy</button><button data-view="guide">Guide</button><button id="resetBtn" style="background:var(--red)">Reset</button></nav>
+<main><section id="r1"></section><section id="r2" class="hidden"></section><section id="final" class="hidden"><div class="final"><h2 id="fCat"></h2><p>Each team sets a wager. Then reveal the clue. You get 30 seconds.</p><div class="wagers" id="wagers"></div><button class="btn" id="fReveal">Reveal Clue and Start Timer</button><div id="fBox" class="hidden" style="margin-top:24px"><div class="timer" id="fTimer">30</div><div class="clue" id="fClue" style="font-size:30px;margin-bottom:20px"></div><button class="btn alt" id="fShow">Reveal Answer</button><div id="fAns" class="hidden" style="color:var(--gold);font-size:28px;font-weight:700;margin:18px 0"></div><div class="row" id="fGrade"></div><button class="btn green" id="champ" style="margin-top:14px">Declare Champion</button><div id="champOut" style="font-size:34px;color:var(--gold);font-weight:900;margin-top:16px"></div></div></div></section>
+<section id="guide" class="hidden"><div class="guide"><h2>How to Play</h2><p>1. Teams pick a category and point value.</p><p>2. The host reads the clue. Teams answer in the form of a question.</p><p>3. Click Reveal Answer, then award or deduct points.</p><p>4. Each round hides 2 Daily Doubles worth double points.</p><p>5. Final Jeopardy: set wagers, reveal the clue, answer in 30 seconds.</p><p>6. Highest score wins.</p></div></section><div class="scores" id="scores"></div><div class="row" style="justify-content:flex-start;margin-top:10px"><button class="btn alt" id="addTeam">Add Team</button></div></main>
+<div class="modal" id="modal"><div class="dd" id="ddBanner">DAILY DOUBLE!</div><div class="label" id="mLabel"></div><div class="timer" id="mTimer"></div><div class="clue" id="mClue"></div><div class="answer" id="mAns"></div><div class="row"><button class="btn alt" id="mShowClue" style="display:none">Reveal Clue</button><button class="btn alt" id="mShowAns">Reveal Answer</button></div><div class="row" id="mAward"></div><div class="row"><button class="btn green" id="mDone">Close and Mark Done</button><button class="btn red" id="mCancel">Cancel</button></div></div>
+<footer>Confidential, Cotality L&amp;D. Built with FLASH Jeopardy.</footer>
+<script id="game-data" type="application/json">{
+  "title": "FLASH Jeopardy: Openly Embedded Validate",
+  "client": "Openly",
+  "course": "Openly-Embedded-Validate",
+  "hosts": "Fred Smith and Renee Taylor",
+  "teams": [
+    "Team 1",
+    "Team 2",
+    "Team 3"
+  ],
+  "timerSeconds": 30,
+  "round1": {
+    "values": [
+      100,
+      200,
+      300,
+      400,
+      500
+    ],
+    "categories": [
+      {
+        "name": "Embedded Basics",
+        "clues": [
+          {
+            "q": "In Embedded Validate, this word means built in.",
+            "a": "What is embedded?"
+          },
+          {
+            "q": "I select this option after preparing the estimate in Claims Estimate or Workspace.",
+            "a": "What is Open in Cotality Validate?"
+          },
+          {
+            "q": "While Validate loads, the estimate is checked against these standards.",
+            "a": "What are company rules and guidelines?"
+          },
+          {
+            "q": "The training estimate contains these on purpose so exceptions will fire.",
+            "a": "What are planned errors?",
+            "dd": true
+          },
+          {
+            "q": "Claims dated before this October date cannot use Open in Validate.",
+            "a": "What is October 9?"
+          }
+        ]
+      },
+      {
+        "name": "Screen Navigation",
+        "clues": [
+          {
+            "q": "I use this default view to review the estimate.",
+            "a": "What is Review?"
+          },
+          {
+            "q": "I use this tab to view all versions of Validate reviews.",
+            "a": "What is Estimate Versions?"
+          },
+          {
+            "q": "I use this tab to review loss and claim details.",
+            "a": "What is Claim Information?"
+          },
+          {
+            "q": "I use this tab to review reports and documents from Estimate.",
+            "a": "What is Job Documentation?"
+          },
+          {
+            "q": "I use this tab to review enriched data or weather verification.",
+            "a": "What is Integrations?"
+          }
+        ]
+      },
+      {
+        "name": "Filters and Tools",
+        "clues": [
+          {
+            "q": "I select this filter for items requiring an edit or explanation.",
+            "a": "What is Exceptions Only?"
+          },
+          {
+            "q": "I select this filter to see every estimate item.",
+            "a": "What is Show All?"
+          },
+          {
+            "q": "I use this top drop-down filter to see work still needing attention.",
+            "a": "What is Unexplained Items?"
+          },
+          {
+            "q": "These are the two exception types displayed by Validate.",
+            "a": "What are Estimate Rule Items and Line-Item exceptions?",
+            "dd": true
+          },
+          {
+            "q": "At the bottom left, I select one of these two options for a tour or assistance.",
+            "a": "What are Start Tour and Help & Support?"
+          }
+        ]
+      },
+      {
+        "name": "Edit Estimate",
+        "clues": [
+          {
+            "q": "I select this before revising line items inside Validate.",
+            "a": "What is Edit Estimate?"
+          },
+          {
+            "q": "I add this to every new line item.",
+            "a": "What is coverage?"
+          },
+          {
+            "q": "I add this when required, along with coverage and depreciation.",
+            "a": "What is PWI?"
+          },
+          {
+            "q": "In the Kitchen, I change this light fixture quantity from 1 to 2.",
+            "a": "What is Light Fixture, Ceiling, Very Good?"
+          },
+          {
+            "q": "In the Family Room, I change this item's minimum charge from HVAC to Flooring.",
+            "a": "What is the Drop-in Floor Register?"
+          }
+        ]
+      },
+      {
+        "name": "Demo Updates",
+        "clues": [
+          {
+            "q": "In General Items, I replace the 30-yard dumpster with this debris option.",
+            "a": "What is a debris container, Trucking and Hauling?"
+          },
+          {
+            "q": "I update this Kitchen appliance price to $125.",
+            "a": "What is the refrigerator?"
+          },
+          {
+            "q": "I add 53.49 LF of prime and paint to this Kitchen item.",
+            "a": "What is casing?"
+          },
+          {
+            "q": "I add 23.33 LF of prime and paint to this molding item.",
+            "a": "What is Base Molding, Up to 6 inches?"
+          },
+          {
+            "q": "I attach this note to support the refrigerator pricing decision.",
+            "a": "What is Photos evidence supports the charge here?"
+          }
+        ]
+      }
+    ]
+  },
+  "round2": {
+    "values": [
+      200,
+      400,
+      600,
+      800,
+      1000
+    ],
+    "categories": [
+      {
+        "name": "Submit and Review",
+        "clues": [
+          {
+            "q": "After edits, I select this to rerun Validate and save changes.",
+            "a": "What is Submit & Validate?"
+          },
+          {
+            "q": "This option saves changes without rerunning the rules.",
+            "a": "What is Exit Estimate Mode?"
+          },
+          {
+            "q": "After Submit & Validate, I review these because new rules might fire.",
+            "a": "What are new or remaining exceptions?"
+          },
+          {
+            "q": "After an item is explained or edited, it leaves this filter.",
+            "a": "What is Unexplained Items?",
+            "dd": true
+          },
+          {
+            "q": "Before completion, I use Unexplained Items to accomplish this step.",
+            "a": "What is clear all remaining work?"
+          }
+        ]
+      },
+      {
+        "name": "Explanations",
+        "clues": [
+          {
+            "q": "After selecting an exception checkbox, I use this command at the top of the screen.",
+            "a": "What is Explain?"
+          },
+          {
+            "q": "This code means Not Approved or Change Needed.",
+            "a": "What is Rejected?"
+          },
+          {
+            "q": "This code means Approved For This Claim and requires a note.",
+            "a": "What is Approved?"
+          },
+          {
+            "q": "This code means a rule fired incorrectly or needs review, and a note is mandatory.",
+            "a": "What is Invalid?"
+          },
+          {
+            "q": "Unlike corrected rules, these remain visible after the reviewer documents them.",
+            "a": "What are explained exceptions?"
+          }
+        ]
+      },
+      {
+        "name": "Adjuster Completion",
+        "clues": [
+          {
+            "q": "I select this colored thumb to move toward approval.",
+            "a": "What is the green thumb?"
+          },
+          {
+            "q": "Without the green thumb, the review has this compliance condition.",
+            "a": "What is out of compliance?"
+          },
+          {
+            "q": "I include this exact option in the status note so notes appear in the Workspace or Estimate timeline.",
+            "a": "What is Send Note to Corelogic?"
+          },
+          {
+            "q": "I use this icon to leave the review without completing it while keeping edits saved.",
+            "a": "What is the Return icon?"
+          },
+          {
+            "q": "At the end of the Adjuster Workflow, Validate is Approved and the estimate has this status.",
+            "a": "What is Complete?",
+            "dd": true
+          }
+        ]
+      },
+      {
+        "name": "Contractor Workflow",
+        "clues": [
+          {
+            "q": "This party accepts the assignment, creates the estimate, and submits it as Complete.",
+            "a": "Who is the contractor?"
+          },
+          {
+            "q": "This party reviews the contractor estimate in Claims Workspace.",
+            "a": "Who is the Openly reviewer?"
+          },
+          {
+            "q": "On the approval path, I select this colored thumb when no changes are needed.",
+            "a": "What is the green thumb?"
+          },
+          {
+            "q": "On the return path, I select this colored thumb after comments and decisions are documented.",
+            "a": "What is the red thumb?"
+          },
+          {
+            "q": "After the contractor completes a revision, this party receives the estimate again for review.",
+            "a": "Who is the adjuster?"
+          }
+        ]
+      },
+      {
+        "name": "Approval or Return",
+        "clues": [
+          {
+            "q": "On the contractor approval path, the Validate review receives this status.",
+            "a": "What is Approved?"
+          },
+          {
+            "q": "On the contractor approval path, the estimate receives this status.",
+            "a": "What is Approved?"
+          },
+          {
+            "q": "On the return path, the Validate review receives this status.",
+            "a": "What is Returned with Exceptions?"
+          },
+          {
+            "q": "On the return path, the estimate receives this status.",
+            "a": "What is Rejected Approval?"
+          },
+          {
+            "q": "Before selecting the red thumb, I add these two forms of documentation.",
+            "a": "What are applicable rule explanations and Reviewers Comments?"
+          }
+        ]
+      }
+    ]
+  },
+  "final": {
+    "category": "Openly Workflow Roles",
+    "q": "One workflow takes an estimate from preparation through approval and completion. In the other, a contractor submits the estimate before a reviewer approves or returns it. Name both workflows.",
+    "a": "What are the Openly Adjuster Workflow and the Contractor Workflow?"
+  }
+}</script>
+<script>
+const G=JSON.parse(document.getElementById('game-data').textContent),KEY='flashJeopardy_'+(G.course||'game');let storage;try{storage=window.localStorage}catch(e){storage=null}const readState=()=>{try{return storage&&storage.getItem(KEY)}catch(e){return null}},writeState=value=>{try{if(storage)storage.setItem(KEY,value)}catch(e){}},clearState=()=>{try{if(storage)storage.removeItem(KEY)}catch(e){}};let state=JSON.parse(readState()||'null')||{teams:G.teams.map(n=>({name:n,score:0})),done:{}};const save=()=>writeState(JSON.stringify(state)),$=id=>document.getElementById(id);$('gTitle').textContent=`${G.title} | ${G.client} | ${G.course}`;$('gHosts').textContent=`Hosts: ${G.hosts}`;let ctx;function tone(f,d,t='sine'){try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.start();o.stop(ctx.currentTime+d)}catch(e){}}const tick=()=>tone(880,.08,'square'),ding=()=>{tone(660,.2);setTimeout(()=>tone(990,.35),150)},buzz=()=>tone(140,.5,'sawtooth');
+function buildBoard(key){const R=G[key],el=$(key);el.innerHTML='';const b=document.createElement('div');b.className='board';b.style.gridTemplateColumns=`repeat(${R.categories.length},1fr)`;R.categories.forEach(c=>{const d=document.createElement('div');d.className='cat';d.textContent=c.name;b.appendChild(d)});R.values.forEach((v,ri)=>R.categories.forEach((c,ci)=>{const id=`${key}-${ci}-${ri}`,t=document.createElement('div');t.className='tile'+(state.done[id]?' done':'');t.textContent=state.done[id]?'':v;t.onclick=()=>{if(!state.done[id])openClue(key,ci,ri,id)};b.appendChild(t)}));el.appendChild(b)}
+function renderScores(){const s=$('scores');s.innerHTML='';state.teams.forEach((t,i)=>{const d=document.createElement('div');d.className='team';d.innerHTML=`<input value="${t.name}"><div class="pts">${t.score}</div><div class="adj"><button data-v="-100">-100</button><button data-v="100">+100</button><button data-x>x</button></div>`;d.querySelector('input').onchange=e=>{t.name=e.target.value;save();renderWagers()};d.querySelectorAll('[data-v]').forEach(btn=>btn.onclick=()=>{t.score+=+btn.dataset.v;save();renderScores()});d.querySelector('[data-x]').onclick=()=>{if(confirm('Remove team?')){state.teams.splice(i,1);save();renderScores();renderWagers()}};s.appendChild(d)})}$('addTeam').onclick=()=>{state.teams.push({name:`Team ${state.teams.length+1}`,score:0});save();renderScores();renderWagers()};
+let timerId,cur;function startTimer(el,secs,onEnd){clearInterval(timerId);let n=secs;el.textContent=n;timerId=setInterval(()=>{n--;el.textContent=n;if(n<=5&&n>0)tick();if(n<=0){clearInterval(timerId);buzz();onEnd&&onEnd()}},1000)}function openClue(key,ci,ri,id){const c=G[key].categories[ci],clue=c.clues[ri];let val=G[key].values[ri];cur={id,key};$('mLabel').textContent=`${c.name} for ${val}`;$('mClue').textContent=clue.q;$('mAns').textContent=clue.a;$('mAns').style.display='none';$('mTimer').textContent='';const dd=!!clue.dd;$('ddBanner').style.display=dd?'block':'none';$('mClue').style.display=dd?'none':'block';$('mShowClue').style.display=dd?'inline-block':'none';if(dd){val*=2;$('mLabel').textContent=`${c.name} | Daily Double, worth ${val}`;ding()}else startTimer($('mTimer'),G.timerSeconds||30);$('mShowClue').onclick=()=>{$('mClue').style.display='block';$('mShowClue').style.display='none';startTimer($('mTimer'),G.timerSeconds||30)};const aw=$('mAward');aw.innerHTML='';state.teams.forEach(t=>{const plus=document.createElement('button');plus.className='btn green';plus.textContent=`${t.name} +${val}`;plus.onclick=()=>{t.score+=val;ding();save();renderScores()};const minus=document.createElement('button');minus.className='btn red';minus.textContent=`${t.name} -${val}`;minus.onclick=()=>{t.score-=val;buzz();save();renderScores()};aw.append(plus,minus)});$('modal').classList.add('show')}$('mShowAns').onclick=()=>{$('mAns').style.display='block';clearInterval(timerId)};$('mDone').onclick=()=>{state.done[cur.id]=true;save();closeModal();buildBoard(cur.key)};$('mCancel').onclick=closeModal;function closeModal(){clearInterval(timerId);$('modal').classList.remove('show')}
+$('fCat').textContent=G.final.category;$('fClue').textContent=G.final.q;$('fAns').textContent=G.final.a;function renderWagers(){const w=$('wagers');w.innerHTML='';state.teams.forEach((t,i)=>{const d=document.createElement('div');d.innerHTML=`<div style="margin-bottom:6px">${t.name}</div><input type="password" min="0" placeholder="Wager" id="wg${i}">`;w.appendChild(d)});const g=$('fGrade');g.innerHTML='';state.teams.forEach((t,i)=>{const ok=document.createElement('button');ok.className='btn green';ok.textContent=`${t.name} correct`;const no=document.createElement('button');no.className='btn red';no.textContent=`${t.name} wrong`;const apply=sign=>{const v=Math.min(Math.max(+($(`wg${i}`).value)||0,0),Math.max(t.score,0));t.score+=sign*v;ok.disabled=no.disabled=true;save();renderScores()};ok.onclick=()=>{apply(1);ding()};no.onclick=()=>{apply(-1);buzz()};g.append(ok,no)})}$('fReveal').onclick=()=>{$('fBox').classList.remove('hidden');$('fReveal').style.display='none';startTimer($('fTimer'),30)};$('fShow').onclick=()=>{$('fAns').classList.remove('hidden');clearInterval(timerId)};$('champ').onclick=()=>{const top=Math.max(...state.teams.map(t=>t.score)),w=state.teams.filter(t=>t.score===top).map(t=>t.name).join(' and ');$('champOut').textContent=`🏆 ${w} wins with ${top} points! 🏆`;ding();setTimeout(ding,400)};
+document.querySelectorAll('nav [data-view]').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav [data-view]').forEach(x=>x.classList.remove('active'));b.classList.add('active');['r1','r2','final','guide'].forEach(v=>$(v).classList.toggle('hidden',v!==b.dataset.view))});$('resetBtn').onclick=()=>{if(confirm('Reset all scores and tiles?')){clearState();location.reload()}};G.r1=G.round1;G.r2=G.round2;buildBoard('r1');buildBoard('r2');renderScores();renderWagers();
+</script></body></html>
